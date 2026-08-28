@@ -1,7 +1,7 @@
 """Application settings
 
 Values are read from the environment, optionally via a local ``.env`` file.
-ENV vars are prefixed with ``ESD_``
+ENV vars are prefixed with ``ASD_``
 """
 
 from pathlib import Path

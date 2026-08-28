@@ -62,12 +62,13 @@ cd frontend && pnpm add -D vitest    # dev-only
 
 ## Data
 
-Datasets live in `data/` and are not committed. Source URLs and instructions for reconstructing `data/` are documented below.
+Datasets live in `data/` and are not committed. 
 
-<!-- Add each dataset: name, source URL, where it goes in data/ -->
-Name | URL | Destination Filename
---- | --- | ---
-Example | example.com | data/exampledata
+Download datasets locally with:
+
+```bash
+python scripts/fetch_mimii.py --type fan --snr 6
+```
 
 ## How we work
 
