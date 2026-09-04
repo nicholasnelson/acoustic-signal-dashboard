@@ -1,0 +1,30 @@
+{
+  "machine01": {
+    "source_id": "mic_1",
+    "machine_type": "fan",
+    "machine_id": "fan_01",
+    "machine_profile": "fan_type_a",
+    "channel": 0
+  },
+  "machine02": {
+    "source_id": "mic_2",
+    "machine_type": "fan",
+    "machine_id": "fan_02",
+    "machine_profile": "fan_type_b",
+    "channel": 0
+  },
+  "machine04": {
+    "source_id": "mic_3",
+    "machine_type": "fan",
+    "machine_id": "fan_04",
+    "machine_profile": "fan_type_a",
+    "channel": 0
+  },
+  "machine06": {
+    "source_id": "mic_4",
+    "machine_type": "fan",
+    "machine_id": "fan_06",
+    "machine_profile": "fan_type_c",
+    "channel": 0
+  }
+}
