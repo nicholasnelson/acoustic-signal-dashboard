@@ -12,13 +12,13 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-   "@lucide/svelte": "^1.31.0",
+    "@lucide/svelte": "^1.31.0",
     "clsx": "^2.1.1",
     "echarts": "^6.0.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "^6.1.0",
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.37.1",
     "@sveltejs/vite-plugin-svelte": "^6.1.0",
     "@tailwindcss/vite": "^4.1.13",
