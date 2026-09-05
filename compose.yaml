@@ -1,0 +1,52 @@
+# The whole system. `docker compose up -d` is a deployment.
+#
+#   cp .env.example .env      # then edit if you want non-default values
+#   docker compose up -d      # API + UI on http://localhost:${ASD_PORT:-8000}
+#   docker compose up db      # Postgres only, for native dev with uv/pnpm
+#
+# Settings come from .env (see .env.example). Everything has a default, so an
+# empty .env works.
+
+services:
+  app:
+    build: .
+    image: acoustic-signal-dashboard:local
+    restart: unless-stopped
+    ports:
+      - "${ASD_PORT:-8000}:8000"
+    environment:
+      ASD_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-asd}:${POSTGRES_PASSWORD:-asd}@db:5432/${POSTGRES_DB:-asd}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Healthy only once migrations have run and the API answers, so
+    # `docker compose up --wait` really means "ready".
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-asd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-asd}
+      POSTGRES_DB: ${POSTGRES_DB:-asd}
+    # Published on loopback only, so native dev can reach it at
+    # localhost:${POSTGRES_PORT} without exposing it beyond this machine.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-asd} -d ${POSTGRES_DB:-asd}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  # Database contents survive `docker compose down`. `down -v` deletes them.
+  pgdata:

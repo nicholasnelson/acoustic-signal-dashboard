@@ -5,8 +5,11 @@ description = "HIT401 Capstone: FastAPI backend for the acoustic signal dashboar
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.19.2",
+    "asyncpg>=0.31.0",
     "fastapi>=0.141.1",
     "pydantic-settings>=2.15.0",
+    "sqlalchemy[asyncio]>=2.0.52",
     "uvicorn[standard]>=0.52.3",
 ]
 
