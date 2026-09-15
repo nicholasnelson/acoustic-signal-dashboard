@@ -2,6 +2,8 @@
 
 Turns one window of samples into the features the dashboard plots and the
 detectors read: waveform, spectrogram, band energy, etc
-
-Owner: TBD.
 """
+
+from acoustic_dashboard.analysis.time_domain import TimeDomainStats
+
+__all__ = ["TimeDomainStats"]
