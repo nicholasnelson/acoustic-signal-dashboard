@@ -1,0 +1,141 @@
+{
+  "all_feature_values_finite": true,
+  "feature_values": 10400,
+  "header_audit": {
+    "DCASE": {
+      "errors": 0,
+      "files": 1300,
+      "formats": [
+        {
+          "bit_depth": 16,
+          "channels": 1,
+          "compression": "NONE",
+          "duration_seconds": 10.0,
+          "files": 1300,
+          "sample_rate_hz": 16000
+        }
+      ],
+      "readable": 1300
+    },
+    "MIMII": {
+      "errors": 0,
+      "files": 5550,
+      "formats": [
+        {
+          "bit_depth": 16,
+          "channels": 8,
+          "compression": "NONE",
+          "duration_seconds": 10.0,
+          "files": 5550,
+          "sample_rate_hz": 16000
+        }
+      ],
+      "readable": 5550
+    }
+  },
+  "inventory": {
+    "DCASE": {
+      "supplemental|none|noise": 100,
+      "test|source|anomaly": 50,
+      "test|source|normal": 50,
+      "test|target|anomaly": 50,
+      "test|target|normal": 50,
+      "train|source|normal": 990,
+      "train|target|normal": 10
+    },
+    "MIMII": {
+      "id_00|anomaly": 407,
+      "id_00|normal": 1011,
+      "id_02|anomaly": 359,
+      "id_02|normal": 1016,
+      "id_04|anomaly": 348,
+      "id_04|normal": 1033,
+      "id_06|anomaly": 361,
+      "id_06|normal": 1015
+    }
+  },
+  "large_shift_feature_count": 16,
+  "large_shift_feature_proportion": 0.6153846153846154,
+  "largest_shift": {
+    "absolute_median_difference_over_pooled_iqr": 156.1545597794157,
+    "absolute_smd": 70.376063812371,
+    "condition": "all",
+    "dcase_files": 200,
+    "dcase_iqr": 4.580514449921153e-06,
+    "dcase_mean": 0.0010382098421521917,
+    "dcase_median": 0.0010379310323758123,
+    "dcase_std": 4.3720941934814235e-06,
+    "feature": "total_power",
+    "ks_pvalue_exploratory": 1.9426434495222354e-119,
+    "ks_statistic": 1.0,
+    "mimii_files": 200,
+    "mimii_iqr": 8.328523285806294e-06,
+    "mimii_mean": 3.370053564433816e-05,
+    "mimii_median": 3.0028479976619882e-05,
+    "mimii_std": 1.9706537134686515e-05,
+    "standardized_mean_difference": -70.376063812371,
+    "wasserstein_raw_units": 0.0010045093065078536
+  },
+  "median_absolute_smd": 1.2146234854152667,
+  "method": {
+    "bands_hz": {
+      "high": [
+        4000.0,
+        8000.0
+      ],
+      "high_mid": [
+        2000.0,
+        4000.0
+      ],
+      "low": [
+        20.0,
+        250.0
+      ],
+      "low_mid": [
+        250.0,
+        500.0
+      ],
+      "mid": [
+        500.0,
+        2000.0
+      ]
+    },
+    "channel_policy": {
+      "DCASE": "native mono channel 0",
+      "MIMII": "channel 0 of 8"
+    },
+    "conditions_per_dataset": {
+      "anomaly": 100,
+      "normal": 100
+    },
+    "feature_count": 26,
+    "large_effect_guide": "absolute SMD >= 0.8; descriptive, not a hypothesis test",
+    "per_dataset": 200,
+    "sample_rate_hz": 16000,
+    "seed": 40122,
+    "smd_definition": "MIMII mean minus DCASE mean divided by pooled sample SD"
+  },
+  "models_fitted": false,
+  "raw_datasets_pooled": false,
+  "selected_files": 400,
+  "smallest_nonconstant_shift": {
+    "absolute_median_difference_over_pooled_iqr": 0.7714048316731483,
+    "absolute_smd": 0.009248899541631052,
+    "condition": "all",
+    "dcase_files": 200,
+    "dcase_iqr": 0.21406431207248605,
+    "dcase_mean": 0.2250072929813033,
+    "dcase_median": 0.10627371515686225,
+    "dcase_std": 0.25367475535176337,
+    "feature": "low_mid_ratio",
+    "ks_pvalue_exploratory": 3.432078828289855e-16,
+    "ks_statistic": 0.42,
+    "mimii_files": 200,
+    "mimii_iqr": 0.13827706231640058,
+    "mimii_mean": 0.2232380523088793,
+    "mimii_median": 0.24217263445783466,
+    "mimii_std": 0.09399144655138485,
+    "standardized_mean_difference": -0.009248899541631052,
+    "wasserstein_raw_units": 0.1567844738805148
+  }
+}
