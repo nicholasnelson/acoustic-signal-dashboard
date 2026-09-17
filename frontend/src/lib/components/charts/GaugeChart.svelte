@@ -11,7 +11,7 @@
   $: color = value >= threshold ? '#f43f5e' : value >= threshold * 0.75 ? '#f59e0b' : '#8b5cf6';
 
   $: option = {
-    animationDuration: 500,
+    animation: false,
     series: [
       {
         type: 'gauge',
@@ -28,7 +28,7 @@
         anchor: { show: false },
         title: { show: true, offsetCenter: [0, '40%'], color: '#a1a1aa', fontSize: 13 },
         detail: {
-          valueAnimation: true,
+          valueAnimation: false,
           formatter: '{value}',
           offsetCenter: [0, '4%'],
           color: '#fafafa',

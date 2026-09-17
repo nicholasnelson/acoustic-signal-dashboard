@@ -2,7 +2,6 @@
 	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
 	import BrainCircuit from '@lucide/svelte/icons/brain-circuit';
 
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Panel from '$lib/components/ui/Panel.svelte';
 	import ThresholdControl from '$lib/components/dashboard/ThresholdControl.svelte';
@@ -25,7 +24,6 @@
 	<title>Settings · Acoustic Monitoring</title>
 </svelte:head>
 
-<Sidebar />
 
 <main class="min-h-screen bg-[#09090d] px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:pl-[108px] lg:pr-6 lg:pb-8">
 	<div class="mx-auto max-w-[1700px] space-y-4">

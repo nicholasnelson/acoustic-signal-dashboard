@@ -4,7 +4,6 @@
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import Radio from '@lucide/svelte/icons/radio';
 
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Panel from '$lib/components/ui/Panel.svelte';
 	import KpiCard from '$lib/components/ui/KpiCard.svelte';
@@ -28,18 +27,17 @@
 
 	$: waveform = generateWaveform(
 		10,
-		650,
+		500,
 		Number(machine.id.replace(/\D/g, '')) || 1
 	);
 
-	$: spectrogram = generateSpectrogram();
+	const spectrogram = generateSpectrogram(64, 30);
 </script>
 
 <svelte:head>
 	<title>{machine.name} · Acoustic Monitoring</title>
 </svelte:head>
 
-<Sidebar />
 
 <main class="min-h-screen bg-[#09090d] px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:pl-[108px] lg:pr-6 lg:pb-8">
 	<div class="mx-auto max-w-[1700px] space-y-4">

@@ -2,7 +2,6 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
 
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 
 	import Panel from '$lib/components/ui/Panel.svelte';
@@ -25,7 +24,7 @@
 	} from '$lib/data/mock';
 
 	const waveform = generateWaveform();
-	const spectrogram = generateSpectrogram();
+	const spectrogram = generateSpectrogram(64, 30);
 
 	const threshold = 65;
 
@@ -50,8 +49,6 @@
 	/>
 </svelte:head>
 
-<!-- Floating desktop navigation -->
-<Sidebar />
 
 <main
 	class="
