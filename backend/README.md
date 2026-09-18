@@ -7,6 +7,7 @@ FastAPI service for the acoustic signal dashboard. Owns the capture analysis det
 ```bash
 cd backend
 uv sync
+docker compose -f ../compose.yaml up -d db   # Postgres on localhost:5432
 ```
 
 ## Running
@@ -34,8 +35,9 @@ uv run ruff format .
   - capture/        # stage 1: playback / mixer / live source
   - analysis/       # stage 2: waveform, spectrogram, band energy
   - detection/      # stage 3: scoring and explainable alerts
+  - db/             # SQLAlchemy models, session factories, Alembic migrations
   - config.py       # environment-driven settings, .env supported
-  - main.py         # app factory
+  - main.py         # app factory + lifespan (migrates, opens the DB engine)
 ```
 Each stage is its own package so it can be swapped independently. Keep web concerns in `api/`; the stages should not import FastAPI, so each can be tested without a server.
 
