@@ -1,12 +1,18 @@
 """Stage 1: Capture
 
-Gets audio into pipeline: replays MIMII clips, mixes several
-machines into one simulated factory env, optional live mic later.
+Provides prerecorded WAV replay and live microphone capture behind the same AudioChunk
+contract so downstream stages do not need to know where the audio originated.
 
-Owner: TBD.
 """
 
+from .microphone_source import LiveMicrophoneSource, list_input_devices
 from .models import AudioChunk
 from .wav_source import WavPlaybackSource, read_wav
 
-__all__ = ["AudioChunk", "WavPlaybackSource", "read_wav"]
+__all__ = [
+    "AudioChunk",
+    "LiveMicrophoneSource",
+    "WavPlaybackSource",
+    "list_input_devices",
+    "read_wav",
+]
