@@ -4,6 +4,7 @@ Turns one window of samples into the features the dashboard plots and the
 detectors read: waveform, spectrogram, band energy, etc
 """
 
+from acoustic_dashboard.analysis.binned_fft import BinnedFFT
 from acoustic_dashboard.analysis.time_domain import TimeDomainStats
 
-__all__ = ["TimeDomainStats"]
+__all__ = ["BinnedFFT", "TimeDomainStats"]
