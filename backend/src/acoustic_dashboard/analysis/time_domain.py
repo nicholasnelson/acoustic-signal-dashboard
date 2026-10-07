@@ -6,6 +6,7 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import ArrayLike
+from scipy import stats
 
 from acoustic_dashboard.core import FeatureWindow
 
@@ -51,14 +52,13 @@ class TimeDomainStats:
 
         rms = np.sqrt(np.mean(x**2))
         peak = np.max(np.abs(x))
-        centred = x - x.mean()
-        var = np.mean(centred**2)
         values = {
             "rms": rms,
             "peak": peak,
             "crest_factor": peak / (rms + _EPS),
             "zero_crossing_rate": np.mean(np.signbit(x[1:]) != np.signbit(x[:-1])),
-            "kurtosis": np.mean(centred**4) / (var**2 + _EPS) - 3.0 if var > _EPS else 0.0,
+            # scipy gives nan for a constant window, so call it 0
+            "kurtosis": stats.kurtosis(x) if np.var(x) > _EPS else 0.0,
         }
         vector = np.array([values[f] for f in self.features])
         return FeatureWindow(timestamp=timestamp, source_id=source_id, vector=vector)
