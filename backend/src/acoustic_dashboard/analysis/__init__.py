@@ -5,5 +5,6 @@ detectors read: waveform, spectrogram, band energy, etc
 """
 
 from acoustic_dashboard.analysis.binned_fft import BinnedFFT
+from acoustic_dashboard.analysis.time_domain import TimeDomainStats
 
-__all__ = ["BinnedFFT"]
+__all__ = ["BinnedFFT", "TimeDomainStats"]
