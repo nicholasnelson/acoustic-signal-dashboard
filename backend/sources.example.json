@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "source_id": "fan-00",
+      "url": "ws://127.0.0.1:9001/fan-00",
+      "window_seconds": 1.0,
+      "hop_seconds": 0.25,
+      "extractor": "binned_fft",
+      "extractor_params": { "n_bins": 6, "edges": [0, 250, 500, 1000, 2000, 4000, 8000] },
+      "calibration_windows": 240
+    }
+  ]
+}

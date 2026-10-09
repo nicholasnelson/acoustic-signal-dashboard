@@ -31,5 +31,8 @@ class Settings(BaseSettings):
     #: Apply pending Alembic migrations when the app starts
     run_migrations: bool = True
 
+    #: JSON source config (see sources.example.json)
+    sources_config: Path | None = None
+
 
 settings = Settings()
