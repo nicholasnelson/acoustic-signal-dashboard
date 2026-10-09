@@ -44,3 +44,19 @@ Each stage is its own package so it can be swapped independently. Keep web conce
 ## Configuration
 
 (OPTIONAL) Copy `.env.example` to `.env` and edit as needed. Defaults are in `config.py`.
+
+## Live microphone capture (optional)
+
+The capture stage can use either prerecorded WAV replay or a physical microphone/input while
+emitting the same `AudioChunk` contract. Live capture is an optional local-development feature:
+
+```bash
+uv sync
+uv pip install -r requirements-live.txt
+uv run python scripts/live_audio_demo.py --list-devices
+uv run python scripts/live_audio_demo.py --stream machine01 --device 0
+```
+
+Omit `--device` to use the operating system's default input. By default the source preserves the
+input device's native sample rate in `AudioChunk.sample_rate`; resampling to the 16 kHz MIMII rate
+belongs in the downstream analysis/pre-processing stage.
