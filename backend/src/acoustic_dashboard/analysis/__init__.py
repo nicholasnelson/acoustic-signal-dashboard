@@ -9,4 +9,10 @@ from acoustic_dashboard.analysis.preprocessor import AudioPreprocessor, Prepared
 from acoustic_dashboard.analysis.spectral_stats import SpectralStats
 from acoustic_dashboard.analysis.time_domain import TimeDomainStats
 
-__all__ = ["AudioPreprocessor", "BinnedFFT", "PreparedAudioWindow", "SpectralStats", "TimeDomainStats"]
+__all__ = [
+    "AudioPreprocessor",
+    "BinnedFFT",
+    "PreparedAudioWindow",
+    "SpectralStats",
+    "TimeDomainStats",
+]

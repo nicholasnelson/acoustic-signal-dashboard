@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import numpy as np
 import pytest
@@ -86,7 +86,9 @@ def test_preprocessor_keeps_source_buffers_separate():
 
 
 def test_preprocessor_rejects_sample_rate_change_for_same_source():
-    preprocessor = AudioPreprocessor(target_sample_rate=100, window_duration=0.04, hop_duration=0.04)
+    preprocessor = AudioPreprocessor(
+        target_sample_rate=100, window_duration=0.04, hop_duration=0.04
+    )
     preprocessor.push(_chunk([1, 2], sample_rate=100))
 
     with pytest.raises(ValueError, match="changed sample rate"):
@@ -108,7 +110,7 @@ def test_preprocessed_live_style_audio_can_feed_binned_fft():
         _chunk(
             samples,
             sample_rate=input_rate,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
     )
 

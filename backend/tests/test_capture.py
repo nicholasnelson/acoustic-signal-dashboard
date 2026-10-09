@@ -57,6 +57,7 @@ def test_wav_playback_source_emits_sequential_chunks(tmp_path):
     assert [len(chunk.samples) for chunk in emitted] == [1, 1, 1]
     assert all(chunk.sample_rate == 100 for chunk in emitted)
 
+
 def test_live_microphone_source_emits_audio_chunks(monkeypatch):
     from acoustic_dashboard.capture import microphone_source
 

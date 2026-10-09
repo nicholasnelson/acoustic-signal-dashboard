@@ -14,7 +14,7 @@ MIMII_BAND_EDGES = [0, 250, 500, 1_000, 2_000, 4_000, 8_000]
 
 
 def load_config(config_path: str | Path) -> dict:
-    with open(config_path, "r", encoding="utf-8") as file:
+    with open(config_path, encoding="utf-8") as file:
         return json.load(file)
 
 
