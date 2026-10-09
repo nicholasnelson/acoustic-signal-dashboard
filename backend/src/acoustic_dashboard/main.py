@@ -6,6 +6,7 @@ Run in development with::
 """
 
 import asyncio
+import json
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -16,9 +17,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from acoustic_dashboard import __version__
 from acoustic_dashboard.api import router
 from acoustic_dashboard.api.static import spa_router
+from acoustic_dashboard.broadcast import Broadcast
 from acoustic_dashboard.config import Settings, settings
 from acoustic_dashboard.db import migrate
 from acoustic_dashboard.db.session import make_engine, make_sessionmaker
+from acoustic_dashboard.pipeline import Runner
 
 log = logging.getLogger(__name__)
 
@@ -34,9 +37,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     engine = make_engine(config.database_url)
     app.state.engine = engine
     app.state.sessionmaker = make_sessionmaker(engine)
+    # Start a runner for each configured source
+    runners = []
+    if config.sources_config:
+        for source in json.loads(config.sources_config.read_text())["sources"]:
+            log.info("starting runner for %s", source["source_id"])
+            runner = Runner(source, app.state.broadcast.publish)
+            runners.append(asyncio.create_task(runner.run()))
     try:
         yield
     finally:
+        for task in runners:
+            task.cancel()
         await engine.dispose()
 
 
@@ -52,6 +64,7 @@ def create_app(config: Settings = settings) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = config
+    app.state.broadcast = Broadcast()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.cors_origins,
