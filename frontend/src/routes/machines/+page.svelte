@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import MachineCard from '$lib/components/dashboard/MachineCard.svelte';
 
@@ -22,7 +21,6 @@
 	<title>Machines · Acoustic Monitoring</title>
 </svelte:head>
 
-<Sidebar />
 
 <main class="min-h-screen bg-[#09090d] px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:pl-[108px] lg:pr-6 lg:pb-8">
 	<div class="mx-auto max-w-[1700px] space-y-4">

@@ -7,7 +7,7 @@
   export let height = '230px';
 
   $: option = {
-    animationDuration: 450,
+    animation: false,
     grid: { left: 38, right: 16, top: 22, bottom: 30 },
     tooltip: { trigger: 'axis', backgroundColor: '#18181f', borderColor: '#34343f', textStyle: { color: '#f4f4f5' } },
     xAxis: {
