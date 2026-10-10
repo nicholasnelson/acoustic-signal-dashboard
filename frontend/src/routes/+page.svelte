@@ -15,18 +15,36 @@
 	import EventList from '$lib/components/dashboard/EventList.svelte';
 	import MachineCard from '$lib/components/dashboard/MachineCard.svelte';
 
+	import { onMount } from 'svelte';
+
 	import {
 		events,
 		generateSpectrogram,
 		generateWaveform,
-		machines,
-		weeklyScores
+		machines
 	} from '$lib/data/mock';
+	import { connectStream, history, latest } from '$lib/services/stream';
 
+	// Mock: waveform and spectrogram need the live display stream (#24); events and
+	// alerts need the events API (#22); machines need the sources API (#9).
 	const waveform = generateWaveform();
 	const spectrogram = generateSpectrogram(64, 30);
 
-	const threshold = 65;
+	onMount(connectStream);
+
+	// Live: the demo has one source. TODO: pick a source, or aggregate across sources
+	$: live = Object.values($latest)[0];
+	$: calibrating = !live || live.state === 'calibrating';
+	$: threshold = live?.threshold ?? 0;
+	// Scores are unbounded distances, so scale the gauge to 3x the threshold
+	$: gaugeMax = threshold ? threshold * 3 : 100;
+	$: gaugeValue = calibrating
+		? Math.round((live?.progress ?? 0) * 100)
+		: Math.round(Math.min(live.score ?? 0, gaugeMax) * 10) / 10;
+	$: trend = $history.map((e) => ({
+		label: new Date(e.timestamp).toLocaleTimeString(),
+		value: Math.round((e.score ?? 0) * 100) / 100
+	}));
 
 	const averageScore = Math.round(
 		machines.reduce((sum, machine) => sum + machine.score, 0) /
@@ -76,28 +94,34 @@
 		/>
 
 <section class="grid gap-3 xl:grid-cols-[280px_minmax(0,1fr)_320px] 2xl:grid-cols-[300px_minmax(0,1fr)_340px]">
-	<Panel title="Anomaly score" subtitle="Aggregate detector output" className="h-full">
+	<Panel
+		title="Anomaly score"
+		subtitle={live ? `Live · ${live.source_id}` : 'Waiting for detector…'}
+		className="h-full"
+	>
 		<div class="flex h-full flex-col">
-			<GaugeChart value={averageScore} {threshold} height="220px" />
+			{#if calibrating}
+				<GaugeChart value={gaugeValue} threshold={101} label="Calibrating (%)" height="220px" />
+			{:else}
+				<GaugeChart value={gaugeValue} {threshold} max={gaugeMax} height="220px" />
+			{/if}
 
 			<div class="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
 				<div>
 					<p class="text-[11px] uppercase tracking-wide text-zinc-600">Threshold</p>
-					<p class="mt-1 text-xs text-zinc-500">Detection limit</p>
+					<p class="mt-1 text-xs text-zinc-500">Set at calibration</p>
 				</div>
 
-				<div class="flex items-baseline gap-1">
-					<span class="text-lg font-semibold text-zinc-100">{threshold}</span>
-					<span class="text-xs text-zinc-600">/100</span>
-				</div>
+				<span class="text-lg font-semibold text-zinc-100">
+					{calibrating ? '—' : threshold.toFixed(2)}
+				</span>
 			</div>
 		</div>
 	</Panel>
 
-	<Panel title="Live waveform" subtitle="Single-channel acoustic stream" className="h-full">
-		<div slot="action" class="flex items-center gap-2 rounded bg-violet-500/10 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider text-violet-300">
-			<span class="size-1.5 rounded-full bg-violet-400"></span>
-			Live
+	<Panel title="Waveform" subtitle="Mock data · single-channel acoustic stream" className="h-full">
+		<div slot="action" class="flex items-center gap-2 rounded bg-zinc-500/10 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+			Mock
 		</div>
 
 		<WaveformChart points={waveform} height="285px" />
@@ -108,7 +132,7 @@
 		</div>
 	</Panel>
 
-	<Panel title="Alerts" subtitle="Requires attention" className="h-full">
+	<Panel title="Alerts" subtitle="Mock data - requires attention" className="h-full">
 		<div class="flex h-full flex-col">
 			<div class="space-y-2">
 				{#each events.slice(0, 2) as event}
@@ -136,7 +160,7 @@
 			<!-- Spectrogram -->
 			<Panel
 				title="Spectrogram"
-				subtitle="Time-frequency acoustic representation"
+				subtitle="Mock data - time-frequency representation"
 			>
 				<SpectrogramChart
 					points={spectrogram}
@@ -156,19 +180,20 @@
 				<!-- Events -->
 				<Panel
 					title="Recent events"
-					subtitle="Latest detector activity"
+					subtitle="Mock data - latest detector activity"
 				>
 					<EventList events={events} />
 				</Panel>
 
-				<!-- Weekly Trend -->
+				<!-- Live score trend. TODO: line chart and time axis; a longer history needs stored scores -->
 				<Panel
-					title="Weekly anomaly trend"
-					subtitle="Average anomaly score over time"
+					title="Anomaly score"
+					subtitle="Live, last minute of windows"
 				>
 					<TrendChart
-						values={weeklyScores}
+						values={trend}
 						{threshold}
+						max={null}
 						height="220px"
 					/>
 				</Panel>
