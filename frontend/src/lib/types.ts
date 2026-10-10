@@ -1,5 +1,10 @@
-export type MachineStatus = 'ready' | 'normal' | 'warning' | 'anomaly' | 'unavailable';
-export type ClipLabel = 'normal' | 'abnormal';
+export type MachineStatus = 'calibrating' | 'normal' | 'anomaly' | 'unavailable';
+
+export interface ScorePoint {
+	label: string;
+	value: number;
+	timestamp: string;
+}
 
 export interface Machine {
 	id: string;
@@ -7,13 +12,11 @@ export interface Machine {
 	type: string;
 	status: MachineStatus;
 	score: number | null;
-	signalQuality: number | null;
-	normalClips: number;
-	abnormalClips: number;
-	meanDistance: number | null;
+	rawScore: number | null;
 	threshold: number | null;
-	lastClip: string | null;
-	lastLabel: ClipLabel | null;
+	calibrationProgress: number | null;
+	lastUpdate: string | null;
+	history: ScorePoint[];
 }
 
 export interface AlertEvent {
@@ -25,20 +28,9 @@ export interface AlertEvent {
 	score: number;
 	threshold: number;
 	scoreIndex: number;
-	severity: 'info' | 'warning' | 'critical';
+	severity: 'critical' | 'info';
 	timestamp: string;
-	windowIndex: number | null;
-}
-
-export interface SignalPoint {
-	time: number;
-	value: number;
-}
-
-export interface SpectrogramPoint {
-	time: number;
-	frequency: number;
-	intensity: number;
+	isoTimestamp: string;
 }
 
 export interface BackendHealth {
@@ -46,41 +38,4 @@ export interface BackendHealth {
 	version: string;
 }
 
-export interface AnalysisSummary {
-	status: MachineStatus;
-	meanDistance: number;
-	maxDistance: number;
-	threshold: number;
-	thresholdIndex: number;
-	anomalousWindows: number;
-	totalWindows: number;
-	anomalousFraction: number;
-	rms: number;
-	dominantFrequencyKHz: number;
-	signalQuality: number;
-}
-
-export interface MachineAnalysis {
-	machine: Machine;
-	clip: {
-		name: string;
-		label: ClipLabel;
-		sampleRate: number;
-		channels: number;
-		durationSeconds: number;
-	};
-	summary: AnalysisSummary;
-	bandEdgesHz: number[];
-	waveform: SignalPoint[];
-	spectrogram: SpectrogramPoint[];
-	events: AlertEvent[];
-}
-
-export interface PipelineSettings {
-	windowSeconds: number;
-	bandEdgesHz: number[];
-	thresholdPercentile: number;
-	baselineClips: number;
-	maxBaselineWindows: number;
-	waveformPoints: number;
-}
+export type StreamConnectionState = 'idle' | 'connecting' | 'connected' | 'disconnected';

@@ -39,11 +39,27 @@ The repository holds two projects with their own toolchains:
 - `backend/`
   - Python, managed with uv. The pipeline plus the API that exposes it.
 - `frontend/`
-  - TypeScript/React, managed with pnpm. Everything the user sees.
+  - TypeScript/SvelteKit, managed with pnpm. Everything the user sees.
 
-They communicate over the `/api` HTTP and WebSocket surface. No shared files / code served by the API. Response shapes should be mirrored between `backend/src/acoustic_dashboard/` and `frontend/src/api/`.
+They communicate over the `/api` HTTP and WebSocket surface. The frontend is built as a static single-page app and served by the backend in production. There is no shared code between the two. Response shapes should be mirrored between `backend/src/acoustic_dashboard/api/` and `frontend/src/lib/` (`types.ts`, `services/`).
 
-Backend stages are modular. All connection handling lives in `backend/src/api` so pipeline stages/modules are testable in isolation without a server.
+Backend stages are modular. All connection handling lives in `backend/src/acoustic_dashboard/api/` so pipeline stages/modules are testable in isolation without a server.
+
+### Database
+
+Postgres 16 via SQLAlchemy 2 (async) and Alembic. Migration is run on startup.
+
+- Models are in `backend/src/acoustic_dashboard/db/models.py`, migrations in `db/migrations/versions/`. Change the model, then:
+
+  ```bash
+  cd backend
+  uv run alembic revision --autogenerate -m "add machines"   # read the generated file!
+  uv run alembic upgrade head
+  ```
+
+  Autogenerate misses renames (it sees drop + add) and some constraint changes. Always review the script before committing it, and keep `uv run alembic check` clean.
+- Every table that belongs to an organisation has a non-null `org_id`** foreign key to `organisations`, and every query on such a table is scoped by it.
+- Tests run against a real Postgres (a `<db>_test` database created on demand), not SQLite. Start one with `docker compose up -d db` before `uv run pytest`.
 
 ## Dependencies
 
@@ -78,9 +94,12 @@ Both lockfiles are committed. Add a package only when a change needs it, in the 
 ## Before you open a PR
 
 ```bash
+docker compose up -d db      # backend tests need Postgres
 cd backend  && uv run pytest && uv run ruff check . && uv run ruff format .
-cd frontend && pnpm test && pnpm typecheck && pnpm lint && pnpm format
+cd frontend && pnpm check && pnpm build
 ```
+
+If you touched the `Dockerfile` or `compose.yaml`, also confirm `docker compose up -d --build` comes up healthy and `/api/health` responds.
 
 ## Data
 

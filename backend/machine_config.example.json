@@ -1,0 +1,46 @@
+{
+  "machine01": {
+    "source_id": "mic_1",
+    "machine_type": "fan",
+    "machine_id": "fan_01",
+    "machine_profile": "fan_type_a",
+    "channel": 0,
+    "playlist": [
+      { "glob": "../data/6_dB/fan/id_00/normal/*.wav", "count": 15 },
+      { "glob": "../data/6_dB/fan/id_00/abnormal/*.wav", "count": 3 }
+    ]
+  },
+  "machine02": {
+    "source_id": "mic_2",
+    "machine_type": "fan",
+    "machine_id": "fan_02",
+    "machine_profile": "fan_type_b",
+    "channel": 0,
+    "playlist": [
+      { "glob": "../data/6_dB/fan/id_02/normal/*.wav", "count": 15 },
+      { "glob": "../data/6_dB/fan/id_02/abnormal/*.wav", "count": 3 }
+    ]
+  },
+  "machine04": {
+    "source_id": "mic_3",
+    "machine_type": "fan",
+    "machine_id": "fan_04",
+    "machine_profile": "fan_type_a",
+    "channel": 0,
+    "playlist": [
+      { "glob": "../data/6_dB/fan/id_04/normal/*.wav", "count": 15 },
+      { "glob": "../data/6_dB/fan/id_04/abnormal/*.wav", "count": 3 }
+    ]
+  },
+  "machine06": {
+    "source_id": "mic_4",
+    "machine_type": "fan",
+    "machine_id": "fan_06",
+    "machine_profile": "fan_type_c",
+    "channel": 0,
+    "playlist": [
+      { "glob": "../data/6_dB/fan/id_06/normal/*.wav", "count": 15 },
+      { "glob": "../data/6_dB/fan/id_06/abnormal/*.wav", "count": 3 }
+    ]
+  }
+}
