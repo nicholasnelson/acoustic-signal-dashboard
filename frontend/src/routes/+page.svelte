@@ -1,286 +1,90 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
 
 	import Topbar from '$lib/components/layout/Topbar.svelte';
-
 	import Panel from '$lib/components/ui/Panel.svelte';
-
-	import WaveformChart from '$lib/components/charts/WaveformChart.svelte';
-	import SpectrogramChart from '$lib/components/charts/SpectrogramChart.svelte';
-	import GaugeChart from '$lib/components/charts/GaugeChart.svelte';
-	import TrendChart from '$lib/components/charts/TrendChart.svelte';
-
 	import AlertCard from '$lib/components/dashboard/AlertCard.svelte';
-	import EventList from '$lib/components/dashboard/EventList.svelte';
 	import MachineCard from '$lib/components/dashboard/MachineCard.svelte';
+	import { alerts, machines, startMonitoring, streamState } from '$lib/services/monitoring';
+	import { getDashboardPreferences } from '$lib/services/preferences';
 
-	import { onMount } from 'svelte';
+	let recentAlertLimit = 3;
 
-	import {
-		events,
-		generateSpectrogram,
-		generateWaveform,
-		machines
-	} from '$lib/data/mock';
-	import { connectStream, history, latest } from '$lib/services/stream';
+	$: scored = $machines.filter((machine) => machine.score !== null);
+	$: averageScore = scored.length ? scored.reduce((sum, machine) => sum + (machine.score ?? 0), 0) / scored.length : null;
+	$: normalCount = $machines.filter((machine) => machine.status === 'normal').length;
+	$: anomalyCount = $machines.filter((machine) => machine.status === 'anomaly').length;
+	$: calibratingCount = $machines.filter((machine) => machine.status === 'calibrating').length;
+	$: sortedMachines = [...$machines].sort((a, b) => {
+		const rank: Record<string, number> = { anomaly: 0, calibrating: 1, normal: 2, unavailable: 3 };
+		const difference = (rank[a.status] ?? 99) - (rank[b.status] ?? 99);
+		return difference !== 0 ? difference : a.name.localeCompare(b.name);
+	});
 
-	// Mock: waveform and spectrogram need the live display stream (#24); events and
-	// alerts need the events API (#22); machines need the sources API (#9).
-	const waveform = generateWaveform();
-	const spectrogram = generateSpectrogram(64, 30);
-
-	onMount(connectStream);
-
-	// Live: the demo has one source. TODO: pick a source, or aggregate across sources
-	$: live = Object.values($latest)[0];
-	$: calibrating = !live || live.state === 'calibrating';
-	$: threshold = live?.threshold ?? 0;
-	// Scores are unbounded distances, so scale the gauge to 3x the threshold
-	$: gaugeMax = threshold ? threshold * 3 : 100;
-	$: gaugeValue = calibrating
-		? Math.round((live?.progress ?? 0) * 100)
-		: Math.round(Math.min(live.score ?? 0, gaugeMax) * 10) / 10;
-	$: trend = $history.map((e) => ({
-		label: new Date(e.timestamp).toLocaleTimeString(),
-		value: Math.round((e.score ?? 0) * 100) / 100
-	}));
-
-	const averageScore = Math.round(
-		machines.reduce((sum, machine) => sum + machine.score, 0) /
-			machines.length
-	);
-
-	const signalQuality = Math.round(
-		machines.reduce(
-			(sum, machine) => sum + machine.signalQuality,
-			0
-		) / machines.length
-	);
+	onMount(() => {
+		recentAlertLimit = getDashboardPreferences().recentAlertLimit;
+		startMonitoring();
+	});
 </script>
 
 <svelte:head>
 	<title>Overview · Acoustic Monitoring</title>
-	<meta
-		name="description"
-		content="Acoustic signal monitoring and anomaly detection dashboard"
-	/>
+	<meta name="description" content="Live acoustic condition-monitoring dashboard" />
 </svelte:head>
 
-
-<main
-	class="
-		min-h-screen
-		bg-[#09090d]
-		px-3
-		pb-24
-		pt-3
-
-		sm:px-5
-		sm:pt-5
-
-		lg:pl-[108px]
-		lg:pr-6
-		lg:pb-8
-	"
->
+<main class="min-h-screen bg-[#09090d] px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:pl-[108px] lg:pr-6 lg:pb-8">
 	<div class="mx-auto max-w-[1700px] space-y-4">
+		<Topbar machineCount={$machines.length} {averageScore} />
 
-		<!-- Floating top information / KPI section -->
-		<Topbar
-			machineCount={machines.length}
-			{averageScore}
-			{signalQuality}
-		/>
-
-<section class="grid gap-3 xl:grid-cols-[280px_minmax(0,1fr)_320px] 2xl:grid-cols-[300px_minmax(0,1fr)_340px]">
-	<Panel
-		title="Anomaly score"
-		subtitle={live ? `Live · ${live.source_id}` : 'Waiting for detector…'}
-		className="h-full"
-	>
-		<div class="flex h-full flex-col">
-			{#if calibrating}
-				<GaugeChart value={gaugeValue} threshold={101} label="Calibrating (%)" height="220px" />
-			{:else}
-				<GaugeChart value={gaugeValue} {threshold} max={gaugeMax} height="220px" />
-			{/if}
-
-			<div class="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
-				<div>
-					<p class="text-[11px] uppercase tracking-wide text-zinc-600">Threshold</p>
-					<p class="mt-1 text-xs text-zinc-500">Set at calibration</p>
-				</div>
-
-				<span class="text-lg font-semibold text-zinc-100">
-					{calibrating ? '—' : threshold.toFixed(2)}
-				</span>
-			</div>
-		</div>
-	</Panel>
-
-	<Panel title="Waveform" subtitle="Mock data · single-channel acoustic stream" className="h-full">
-		<div slot="action" class="flex items-center gap-2 rounded bg-zinc-500/10 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-			Mock
-		</div>
-
-		<WaveformChart points={waveform} height="285px" />
-
-		<div class="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
-			<span class="text-zinc-500">Audio source</span>
-			<span class="font-medium text-zinc-300">MIMII · Fan</span>
-		</div>
-	</Panel>
-
-	<Panel title="Alerts" subtitle="Mock data - requires attention" className="h-full">
-		<div class="flex h-full flex-col">
-			<div class="space-y-2">
-				{#each events.slice(0, 2) as event}
-					<AlertCard {event} />
-				{/each}
-			</div>
-
-			<a href="/alerts" class="mt-auto flex min-h-11 items-center justify-between border-t border-white/10 pt-4 text-xs font-medium text-zinc-400 hover:text-violet-300">
-				<span>View all alerts</span>
-				<ChevronRight size={16} strokeWidth={1.8} class="text-zinc-600" />
-			</a>
-		</div>
-	</Panel>
-</section>
-
-		<!-- Acoustic analysis row -->
-		<section
-			class="
-				grid
-				gap-4
-
-				xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]
-			"
-		>
-			<!-- Spectrogram -->
-			<Panel
-				title="Spectrogram"
-				subtitle="Mock data - time-frequency representation"
-			>
-				<SpectrogramChart
-					points={spectrogram}
-					height="340px"
-				/>
-			</Panel>
-
-			<div
-				class="
-					grid
-					gap-4
-
-					md:grid-cols-2
-					xl:grid-cols-1
-				"
-			>
-				<!-- Events -->
-				<Panel
-					title="Recent events"
-					subtitle="Mock data - latest detector activity"
-				>
-					<EventList events={events} />
-				</Panel>
-
-				<!-- Live score trend. TODO: line chart and time axis; a longer history needs stored scores -->
-				<Panel
-					title="Anomaly score"
-					subtitle="Live, last minute of windows"
-				>
-					<TrendChart
-						values={trend}
-						{threshold}
-						max={null}
-						height="220px"
-					/>
-				</Panel>
-			</div>
-		</section>
-
-		<!-- Machines heading -->
-		<section
-			class="
-				flex
-				flex-col
-				gap-3
-				pt-2
-
-				sm:flex-row
-				sm:items-end
-				sm:justify-between
-			"
-		>
+		<section class="flex flex-col gap-3 pt-1 sm:flex-row sm:items-end sm:justify-between">
 			<div>
-				<h2
-					class="
-						text-base
-						font-semibold
-						tracking-tight
-						text-zinc-100
-					"
-				>
-					Machines
-				</h2>
-
-				<p
-					class="
-						mt-1
-						text-xs
-						text-zinc-500
-					"
-				>
-					Select a machine to inspect its acoustic data.
-				</p>
+				<h1 class="text-xl font-semibold tracking-tight text-zinc-100 sm:text-2xl">System overview</h1>
+				<p class="mt-1 text-sm text-zinc-500">Live source activity and alerts from the backend stream.</p>
 			</div>
+			
+		</section>
 
-			<a
-				href="/settings"
-				class="
-					flex
-					min-h-11
-					w-fit
-					items-center
-					gap-2
-					rounded-xl
-					border
-					border-white/[0.08]
-					px-4
-					text-xs
-					font-medium
-					text-zinc-300
-					transition
+		<Panel
+			title="Recent alerts"
+			subtitle={$alerts.length ? `${$alerts.length} alert ${$alerts.length === 1 ? 'event' : 'events'} available to review` : 'No alert events have been generated yet'}
+			className={anomalyCount > 0 ? 'border-rose-500/20' : ''}
+			contentClass={$alerts.length ? 'space-y-2' : 'py-4'}
+		>
+			<a slot="action" href="/alerts" class="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 text-xs font-medium text-zinc-400 transition hover:border-violet-500/25 hover:text-violet-300">View all<ChevronRight size={14} strokeWidth={1.8} /></a>
+			{#if $alerts.length}
+				{#each $alerts.slice(0, recentAlertLimit) as event}<AlertCard {event} />{/each}
+			{:else}
+				<div class="flex items-center justify-between gap-4"><p class="text-sm text-zinc-500">Waiting for a source to cross its alert level.</p><a href="/machines" class="text-xs font-medium text-violet-300 hover:text-violet-200">Open machines</a></div>
+			{/if}
+		</Panel>
 
-					hover:bg-white/[0.05]
-
-					active:scale-[0.98]
-				"
-			>
-				<SlidersHorizontal
-					size={16}
-					strokeWidth={1.8}
-				/>
-
-				Controls
+		<section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+			<a href="/alerts" class={`rounded-xl border bg-white/[0.025] p-4 transition hover:bg-white/[0.04] ${anomalyCount > 0 ? 'border-rose-500/25 hover:border-rose-500/40' : 'border-white/[0.08] hover:border-white/[0.12]'}`}>
+				<p class="text-xs font-medium text-zinc-500">Alert</p><p class={`mt-3 text-2xl font-semibold ${anomalyCount > 0 ? 'text-rose-400' : 'text-zinc-100'}`}>{anomalyCount}</p><p class="mt-1 text-xs text-zinc-600">Sources currently above the learned threshold</p>
+			</a>
+			<a href="/machines" class="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 transition hover:border-violet-500/25 hover:bg-white/[0.04]">
+				<p class="text-xs font-medium text-zinc-500">Calibrating</p><p class="mt-3 text-2xl font-semibold text-violet-300">{calibratingCount}</p><p class="mt-1 text-xs text-zinc-600">Learning an initial normal baseline</p>
+			</a>
+			<a href="/machines" class="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 transition hover:border-emerald-500/25 hover:bg-white/[0.04]">
+				<p class="text-xs font-medium text-zinc-500">Normal</p><p class="mt-3 text-2xl font-semibold text-zinc-100">{normalCount}</p><p class="mt-1 text-xs text-zinc-600">Current score is below the alert level</p>
+			</a>
+			<a href="/machines" class="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 transition hover:border-violet-500/25 hover:bg-white/[0.04]">
+				<p class="text-xs font-medium text-zinc-500">Live sources</p><p class="mt-3 text-2xl font-semibold text-zinc-100">{$machines.length}</p><p class="mt-1 text-xs text-zinc-600">Sources discovered from /api/stream</p>
 			</a>
 		</section>
 
-		<!-- Machine cards -->
-		<section
-			class="
-				grid
-				gap-3
+		<section>
+			<div class="mb-2 flex items-end justify-between gap-3">
+				<div><h2 class="text-base font-semibold tracking-tight text-zinc-100">Machines</h2><p class="mt-1 text-xs text-zinc-500">Alerting sources are shown first. Open a source for its live score trend and event history.</p></div>
+				<a href="/machines" class="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 text-xs font-medium text-zinc-400 transition hover:border-violet-500/25 hover:text-violet-300">View all<ChevronRight size={14} strokeWidth={1.8} /></a>
+			</div>
 
-				sm:grid-cols-2
-				xl:grid-cols-4
-			"
-		>
-			{#each machines as machine}
-				<MachineCard {machine} />
-			{/each}
+			{#if sortedMachines.length}
+				<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{#each sortedMachines as machine}<MachineCard {machine} />{/each}</div>
+			{:else}
+				<div class="rounded border border-white/10 bg-[#101014]/90 p-6 text-sm text-zinc-500">Waiting for the backend runner to publish source data. Start the device server and FastAPI with a sources config.</div>
+			{/if}
 		</section>
-
 	</div>
 </main>
