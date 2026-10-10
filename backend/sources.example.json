@@ -1,4 +1,5 @@
 {
+  "_comment": "Feature and window parameters follow the interim report's evaluation protocol (Table 3-1): 1.0 s windows with a 0.25 s hop; 10 log-spaced bands, 20 Hz to 8 kHz, from a 1 Hz resolution FFT (n_fft = one window of 16 kHz audio). Log spacing puts more bands where rotational energy sits; it was the stronger of the two spacings on fan (interim Table 4-1). See pipeline.py for calibration and threshold choices.",
   "sources": [
     {
       "source_id": "fan-00",
@@ -6,8 +7,13 @@
       "window_seconds": 1.0,
       "hop_seconds": 0.25,
       "extractor": "binned_fft",
-      "extractor_params": { "n_bins": 6, "edges": [0, 250, 500, 1000, 2000, 4000, 8000] },
-      "calibration_windows": 240
+      "extractor_params": {
+        "n_bins": 10,
+        "edges": [20, 36, 66, 121, 220, 400, 728, 1326, 2414, 4394, 8000],
+        "n_fft": 16000
+      },
+      "calibration_windows": 480,
+      "threshold_percentile": 99.5
     }
   ]
 }

@@ -8,6 +8,8 @@ from scipy.spatial.distance import mahalanobis
 
 from acoustic_dashboard.core import FeatureWindow
 
+RIDGE = 1e-3
+
 
 class MahalanobisDetector:
     def __init__(self) -> None:
@@ -28,7 +30,8 @@ class MahalanobisDetector:
         x = np.stack([w.vector for w in windows]).astype(np.float64)
         self.source_id = sources.pop()
         self.mean = x.mean(axis=0)
-        self.inv_cov = np.linalg.pinv(np.atleast_2d(np.cov(x, rowvar=False)))
+        cov = np.atleast_2d(np.cov(x, rowvar=False))
+        self.inv_cov = np.linalg.pinv(cov + RIDGE * np.diag(np.diag(cov)))
 
     def score(self, window: FeatureWindow) -> float:
         if self.mean is None:
@@ -40,7 +43,7 @@ class MahalanobisDetector:
         return float(mahalanobis(window.vector, self.mean, self.inv_cov))
 
     def threshold_from_baseline(
-        self, windows: Sequence[FeatureWindow], percentile: float = 99.0
+        self, windows: Sequence[FeatureWindow], percentile: float = 99.5
     ) -> float:
         """Score that ``percentile`` % of the given normal windows fall at or under."""
         if not 0 < percentile <= 100:

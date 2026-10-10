@@ -62,10 +62,27 @@ class Runner:
         event = {"source_id": fw.source_id, "timestamp": fw.timestamp.isoformat()}
         if self.threshold is None:
             self.baseline.append(fw)
+            # Calibration length: the proposal (#3) suggests 10-30 min of enrolment in a
+            # real deployment. The demo config uses 2 min (480 windows): on MIMII fan id_00,
+            # 60 s flagged 39% of later normal windows, 2 min flagged 3% (and caught 84%
+            # of abnormal windows), as each 10 s clip is a separate recording and the
+            # baseline needs enough of them to cover normal variation.
             n = self.source["calibration_windows"]
             if len(self.baseline) >= n:
-                self.detector.fit(self.baseline)
-                self.threshold = self.detector.threshold_from_baseline(self.baseline)
+                # Fit on the first half, set the threshold on the second half: windows the
+                # detector hasn't seen, so the threshold reflects normal clip-to-clip
+                # variation. Thresholding on the fit windows' scores (as in the interim
+                # evaluation) flagged ~half of later normal windows live. Halves mirror the
+                # interim fit/held-out split.
+                half = len(self.baseline) // 2
+                self.detector.fit(self.baseline[:half])
+                # 99.5th percentile, as in the interim evaluation (Table 3-1): targets a
+                # false-alarm rate under 1%, the Neyman-Pearson framing of Koizumi et al.
+                # (2019). TODO: margin, and fit the percentile per machine (RQ2)
+                percentile = self.source.get("threshold_percentile", 99.5)
+                self.threshold = self.detector.threshold_from_baseline(
+                    self.baseline[half:], percentile
+                )
                 log.info("%s: calibrated, threshold %.3f", fw.source_id, self.threshold)
             self.publish(event | {"state": "calibrating", "progress": len(self.baseline) / n})
             return
