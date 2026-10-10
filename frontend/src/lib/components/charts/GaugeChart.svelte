@@ -4,6 +4,7 @@
 
   export let value = 0;
   export let threshold = 65;
+  export let max = 100;
   export let label = 'Anomaly score';
   export let height = '240px';
 
@@ -18,7 +19,7 @@
         startAngle: 225,
         endAngle: -45,
         min: 0,
-        max: 100,
+        max,
         pointer: { show: false },
         progress: { show: true, width: 14, roundCap: false, itemStyle: { color } },
         axisLine: { lineStyle: { width: 14, color: [[1, '#24242d']] } },

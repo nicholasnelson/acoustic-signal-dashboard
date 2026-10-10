@@ -4,6 +4,7 @@
 
   export let values: Array<{ label: string; value: number }> = [];
   export let threshold = 65;
+  export let max: number | null = 100; // null: fit to the data
   export let height = '230px';
 
   $: option = {
@@ -20,7 +21,7 @@
     yAxis: {
       type: 'value',
       min: 0,
-      max: 100,
+      max: max ?? undefined,
       axisLine: { show: false },
       splitLine: { lineStyle: { color: 'rgba(255,255,255,.05)' } },
       axisLabel: { color: '#71717a' }
