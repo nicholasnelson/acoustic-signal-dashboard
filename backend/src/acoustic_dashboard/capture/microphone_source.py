@@ -1,13 +1,12 @@
 import asyncio
 import inspect
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, TypeAlias
 
 import numpy as np
 
 from .models import AudioChunk
-
 
 ChunkHandler: TypeAlias = Callable[[AudioChunk], None | Awaitable[None]]
 
@@ -129,9 +128,7 @@ class LiveMicrophoneSource:
             raise ValueError("max_chunks must be greater than zero when supplied.")
 
         loop = asyncio.get_running_loop()
-        queue: asyncio.Queue[tuple[np.ndarray, str | None]] = asyncio.Queue(
-            maxsize=self.queue_size
-        )
+        queue: asyncio.Queue[tuple[np.ndarray, str | None]] = asyncio.Queue(maxsize=self.queue_size)
 
         def enqueue_block(samples: np.ndarray, status_text: str | None) -> None:
             if queue.full():
@@ -172,7 +169,7 @@ class LiveMicrophoneSource:
                     chunk_index=chunk_index,
                     stream_start_time=stream_start_time,
                     duration=actual_duration,
-                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    timestamp=datetime.now(UTC).isoformat(),
                     sample_rate=self.sample_rate,
                     samples=samples,
                 )

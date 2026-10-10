@@ -45,17 +45,34 @@ Each stage is its own package so it can be swapped independently. Keep web conce
 
 (OPTIONAL) Copy `.env.example` to `.env` and edit as needed. Defaults are in `config.py`.
 
+## Running the pipeline
+
+The backend pulls audio from network devices: each source in the sources config has a WebSocket `url`. The device server stands in for networked microphones. It serves each machine in `machine_config.example.json` at `ws://127.0.0.1:9001/<machine>`, replaying a looping WAV playlist (or a live mic, see below).
+
+```bash
+uv run python -m acoustic_dashboard.capture.device_server machine_config.example.json
+```
+
+Then start the API with a runner for each source in `sources.example.json` (`ASD_RUN_MIGRATIONS=false` if Postgres isn't running). Events stream on `WS /api/stream`:
+
+```bash
+ASD_SOURCES_CONFIG=sources.example.json uv run uvicorn acoustic_dashboard.main:app
+```
+
+The runner calibrates live: the first `calibration_windows` windows are assumed normal.
+
 ## Live microphone capture (optional)
 
 The capture stage can use either prerecorded WAV replay or a physical microphone/input while
 emitting the same `AudioChunk` contract. Live capture is an optional local-development feature:
 
 ```bash
-uv sync
-uv pip install -r requirements-live.txt
+uv sync --extra live
 uv run python scripts/live_audio_demo.py --list-devices
 uv run python scripts/live_audio_demo.py --stream machine01 --device 0
 ```
+
+To serve a mic from the device server, give a machine `"mic": <device index or null for the default input>` instead of a `"playlist"`. One capture is shared by every connected client.
 
 Omit `--device` to use the operating system's default input. By default the source preserves the
 input device's native sample rate in `AudioChunk.sample_rate`; resampling to the 16 kHz MIMII rate

@@ -5,7 +5,6 @@ import numpy as np
 
 @dataclass
 class AudioChunk:
-
     source_id: str
     machine_type: str
     machine_id: str

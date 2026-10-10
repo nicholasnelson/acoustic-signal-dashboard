@@ -2,14 +2,13 @@ import asyncio
 import inspect
 import wave
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeAlias
 
 import numpy as np
 
 from .models import AudioChunk
-
 
 ChunkHandler: TypeAlias = Callable[[AudioChunk], None | Awaitable[None]]
 
@@ -102,7 +101,7 @@ class WavPlaybackSource:
                 chunk_index=chunk_index,
                 stream_start_time=stream_start_time,
                 duration=actual_duration,
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
                 sample_rate=self.sample_rate,
                 samples=chunk_samples,
             )
