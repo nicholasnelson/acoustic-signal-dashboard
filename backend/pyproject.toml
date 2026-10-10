@@ -16,6 +16,11 @@ dependencies = [
     "websockets>=17.0.1",
 ]
 
+[project.optional-dependencies]
+live = [
+    "sounddevice>=0.5.2",
+]
+
 [dependency-groups]
 dev = [
     "httpx2>=2.10.0",

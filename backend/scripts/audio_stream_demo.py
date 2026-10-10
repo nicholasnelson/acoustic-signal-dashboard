@@ -10,7 +10,7 @@ from acoustic_dashboard.capture import AudioChunk, WavPlaybackSource
 
 
 def load_config(config_path: str | Path) -> dict:
-    with open(config_path, "r", encoding="utf-8") as file:
+    with open(config_path, encoding="utf-8") as file:
         return json.load(file)
 
 
@@ -71,9 +71,7 @@ async def run_streams(
             continue
 
         if not Path(wav_path).exists():
-            print(
-                f"Warning: WAV file for '{stream_name}' does not exist: {wav_path}"
-            )
+            print(f"Warning: WAV file for '{stream_name}' does not exist: {wav_path}")
             continue
 
         try:
@@ -83,10 +81,7 @@ async def run_streams(
                 chunk_duration=chunk_duration,
             )
         except (wave.Error, ValueError) as error:
-            print(
-                f"Warning: could not load '{stream_name}' from "
-                f"'{wav_path}'. Skipping."
-            )
+            print(f"Warning: could not load '{stream_name}' from '{wav_path}'. Skipping.")
             print(f"Reason: {error}")
             continue
 
@@ -123,10 +118,7 @@ async def run_streams(
     print("=" * 70)
     print()
 
-    tasks = [
-        asyncio.create_task(source.stream(print_chunk))
-        for _, source in prepared_streams
-    ]
+    tasks = [asyncio.create_task(source.stream(print_chunk)) for _, source in prepared_streams]
 
     await asyncio.gather(*tasks)
 
@@ -139,8 +131,7 @@ async def run_streams(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Simulate multiple live industrial microphone streams "
-            "using prerecorded WAV files."
+            "Simulate multiple live industrial microphone streams using prerecorded WAV files."
         )
     )
 
@@ -153,10 +144,7 @@ def main() -> None:
     parser.add_argument(
         "--config",
         default="machine_config.example.json",
-        help=(
-            "Path to machine configuration JSON file "
-            "(default: machine_config.example.json)."
-        ),
+        help=("Path to machine configuration JSON file (default: machine_config.example.json)."),
     )
 
     parser.add_argument(

@@ -10,12 +10,14 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+import numpy as np
 from websockets.exceptions import ConnectionClosed
 
 from acoustic_dashboard.analysis.binned_fft import BinnedFFT
+from acoustic_dashboard.analysis.preprocessor import AudioPreprocessor
 from acoustic_dashboard.analysis.spectral_stats import SpectralStats
 from acoustic_dashboard.analysis.time_domain import TimeDomainStats
-from acoustic_dashboard.analysis.windowing import Windower
+from acoustic_dashboard.capture.models import AudioChunk
 from acoustic_dashboard.capture.websocket_source import StreamHeader, receive
 from acoustic_dashboard.core import FeatureWindow
 from acoustic_dashboard.detection import MahalanobisDetector
@@ -47,16 +49,38 @@ class Runner:
 
     async def _consume(self) -> None:
         s = self.source
+        # Everything is resampled to one rate, so a source's features don't depend on the
+        # device it happens to be connected to
+        rate = s.get("sample_rate", 16_000)
+        extractor = EXTRACTORS[s["extractor"]](rate, **s.get("extractor_params", {}))
         async for item in receive(s["url"]):
             if isinstance(item, StreamHeader):
-                rate = item.sample_rate
-                windower = Windower(
-                    int(s["window_seconds"] * rate), int(s["hop_seconds"] * rate), rate, item.start
+                header = item
+                preprocessor = AudioPreprocessor(
+                    target_sample_rate=rate,
+                    window_duration=s["window_seconds"],
+                    hop_duration=s["hop_seconds"],
                 )
-                extractor = EXTRACTORS[s["extractor"]](rate, **s.get("extractor_params", {}))
                 continue
-            for timestamp, window in windower.push(item):
-                self._handle(extractor.extract(window, timestamp, s["source_id"]))
+            for window in preprocessor.push(self._chunk(item, header)):
+                self._handle(extractor.extract(window.samples, window.timestamp, s["source_id"]))
+
+    def _chunk(self, samples: np.ndarray, header: StreamHeader) -> AudioChunk:
+        """Wrap network samples for AudioPreprocessor, which windows from the first
+        chunk's timestamp. Machine metadata comes from the source config."""
+        s = self.source
+        return AudioChunk(
+            source_id=s["source_id"],
+            machine_type=s.get("machine_type", ""),
+            machine_id=s.get("machine_id", ""),
+            machine_profile=s.get("machine_profile", ""),
+            chunk_index=0,
+            stream_start_time=0.0,
+            duration=len(samples) / header.sample_rate,
+            timestamp=header.start.isoformat(),
+            sample_rate=header.sample_rate,
+            samples=samples,
+        )
 
     def _handle(self, fw: FeatureWindow) -> None:
         event = {"source_id": fw.source_id, "timestamp": fw.timestamp.isoformat()}
