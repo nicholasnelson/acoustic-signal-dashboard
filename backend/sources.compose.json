@@ -1,0 +1,15 @@
+{
+  "sources": [
+    {
+      "source_id": "fan-00",
+      "machine_type": "fan",
+      "machine_id": "fan_01",
+      "url": "ws://devices:9001/machine01",
+      "window_seconds": 1.0,
+      "hop_seconds": 0.25,
+      "extractor": "binned_fft",
+      "extractor_params": { "n_bins": 6, "edges": [0, 250, 500, 1000, 2000, 4000, 8000] },
+      "calibration_windows": 240
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# Live demo: adds the simulated device server and starts a pipeline runner.
+# Layered on top of compose.yaml, which stays a plain deployment.
+#
+#   python scripts/fetch_mimii.py --type fan --snr 6    # dataset into ./data
+#   docker compose -f compose.yaml -f compose.demo.yaml up -d --build --wait
+#
+# The device server replays the WAV playlists in backend/machine_config.example.json
+# as networked microphones; the app calibrates on the first windows, then scores.
+
+services:
+  app:
+    environment:
+      ASD_SOURCES_CONFIG: sources.compose.json
+    depends_on:
+      devices:
+        condition: service_started
+
+  devices:
+    # Same image as app; build rather than pull it (it is never published)
+    build: .
+    image: acoustic-signal-dashboard:local
+    restart: unless-stopped
+    command:
+      - python
+      - -m
+      - acoustic_dashboard.capture.device_server
+      - machine_config.example.json
+      - --host
+      - 0.0.0.0
+    # Playlist globs are relative to the config file (/app), so ../data is /data
+    volumes:
+      - ${ASD_DEMO_DATA_DIR:-./data}:/data:ro
