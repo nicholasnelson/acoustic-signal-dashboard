@@ -9,7 +9,8 @@ import type {
 	StreamConnectionState
 } from '$lib/types';
 
-const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000/api';
+// Same origin: the backend serves the built UI, and Vite proxies /api in dev
+const DEFAULT_API_BASE_URL = '/api';
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, '');
 const ALERT_CACHE_KEY = 'acoustic-dashboard-live-alert-history-v2';
 const MAX_ALERTS = 100;

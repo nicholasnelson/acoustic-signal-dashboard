@@ -25,6 +25,16 @@ docker compose up -d --wait
 
 The first start builds the image (a couple of minutes) and applies database migrations. `up --wait` returns once the API is answering.
 
+### Live demo
+
+`compose.demo.yaml` adds a simulated device server that replays MIMII fan recordings as networked microphones, and starts a pipeline runner for each source in `backend/sources.compose.json`. It needs the fan dataset in `data/` (see [Data](#data)), or set `ASD_DEMO_DATA_DIR` to where it lives.
+
+```bash
+docker compose -f compose.yaml -f compose.demo.yaml up -d --build --wait
+```
+
+Open http://localhost:8000. Each source calibrates on its first `calibration_windows` windows (about a minute), then scores live. The playlist is 150 s of normal audio then 30 s of abnormal, looping. Restarting `app` restarts calibration.
+
 ### Self-hosting
 
 The same three commands on any machine with Docker are a deployment. Before exposing it beyond localhost, set `POSTGRES_PASSWORD` in `.env`. Database contents live in the `pgdata` Docker volume and survive restarts and rebuilds.
